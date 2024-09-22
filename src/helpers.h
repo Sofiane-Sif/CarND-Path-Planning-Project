@@ -154,4 +154,91 @@ vector<double> getXY(double s, double d, const vector<double> &maps_s,
   return {x,y};
 }
 
+int detectCarLane(float d){
+  int car_lane = -1;
+  if (d > 0 && d < 4) {
+    car_lane = 0;
+  } else if (d > 4 && d < 8) {
+    car_lane = 1;
+  } else if (d > 8 && d < 12) {
+    car_lane = 2;
+  }
+
+  return car_lane;
+}
+
+bool detectFrontCars(int car_lane, int lane, double car_s, double check_car_s){
+  bool car_in_front = false;
+  if ((check_car_s > car_s) && (check_car_s - car_s < 30)) {
+    car_in_front = true;
+  }
+  return car_in_front;
+}
+
+bool detectLeftCars(int car_lane, int lane, double car_s, double check_car_s){
+  bool car_left;
+  // Car left
+  if ((car_s - 30) < check_car_s && (car_s + 30) > check_car_s) {
+      car_left = true;
+    }
+  return car_left;
+}
+
+bool detectRightCars(int car_lane, int lane, double car_s, double check_car_s){
+  bool car_right;
+  // Car right
+  if ((car_s - 30) < check_car_s && (car_s + 30) > check_car_s) {
+      car_right = true;
+  }
+  return car_right;
+}
+
+int changeLane(int lane, bool car_left, bool car_right){
+  if (!car_left && lane > 0) {
+    // if there is no car left and there is a left lane.
+    lane = lane - 1; // Change lane left.
+  } else if (!car_right && lane != 2){
+    // if there is no car right and there is a right lane.
+    lane = lane + 1; // Change lane right.
+  }
+  
+  return lane;
+}
+
+int comebackCenterLane(int lane, bool car_left, bool car_right){
+  if (lane != 1) { // if we are not on the center lane.
+    if ((lane == 0 && !car_right) || (lane == 2 && !car_left)) {
+      lane = 1; // Back to center lane
+    }
+  }
+  return lane;
+}
+
+vector<bool> checkSurrounding(
+  bool car_in_front, 
+  bool car_right, 
+  bool car_left, 
+  int car_lane, 
+  int lane, 
+  double car_s,
+  double check_car_s
+  ){
+    if (car_lane == lane) {
+      if ((check_car_s > car_s) && (check_car_s - car_s < 30)) {
+        car_in_front = true;
+      }
+    } else if (car_lane == lane - 1) {
+        // Car left
+        if ((car_s - 30) < check_car_s && (car_s + 30) > check_car_s) {
+            car_left = true;
+        }
+    } else if (car_lane == lane + 1) {
+        // Car right
+        if ((car_s - 30) < check_car_s && (car_s + 30) > check_car_s) {
+            car_right = true;
+        }
+    }
+
+    return {car_in_front, car_right, car_left};
+  }
 #endif  // HELPERS_H
